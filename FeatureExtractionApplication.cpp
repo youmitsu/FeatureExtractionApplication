@@ -259,11 +259,6 @@ int _tmain(int argc, _TCHAR* argv[])
 			dynamic_features.push_back(feature);
 		}
 
-		//平均値算出用のfloatの配列(和を保持)
-		float *sums;
-		sums = (float *)calloc(DYNAMIC_FEATURE_COUNT, sizeof(float));
-		int * zero_count;
-		zero_count = (int *)calloc(DYNAMIC_FEATURE_COUNT, sizeof(int));
 		//特徴量算出=>出力
 		for (i = 0; i < DYNAMIC_FEATURE_COUNT; i++){
 			vector<int> use_points = dynamic_feature_use_angles[i];
@@ -271,7 +266,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				vector<Point3f> p1 = connected_positions[use_points[0]];
 				vector<Point3f> p2 = connected_positions[use_points[1]];
 				vector<Point3f> p3 = connected_positions[use_points[2]];
-				
+
 				//フレームサイズを最小値に合わせてエラー回避
 				int frameSize;
 				int p1Size = p1.size();
@@ -303,7 +298,6 @@ int _tmain(int argc, _TCHAR* argv[])
 						angle = evaluate_angle(p1[j], p2[j], p3[j], k, i);
 					}
 					dynamic_features[i].push_back(angle);
-					sums[i] += angle;
 				}
 			}
 			else if (use_points.size() == 4){
@@ -341,20 +335,12 @@ int _tmain(int argc, _TCHAR* argv[])
 						angle = evaluate_seperated_angle(p1[j], p2[j], p3[j], p4[j]);
 					}
 					dynamic_features[i].push_back(angle);
-					sums[i] += angle;
 				}
 			}
 			else{
 				cout << "予期せぬエラー" << endl;
 			}
 		}
-
-		//平均値算出
-		float averages[DYNAMIC_FEATURE_COUNT];
-		for (i = 0; i < DYNAMIC_FEATURE_COUNT; i++){
-			averages[i] = sums[i] / dynamic_features[i].size();
-		}
-
 		//平均値で引く=>ファイル出力
 		ofstream output_dynamic_file(output_dynamic_filename);
 		for (i = 0; i < DYNAMIC_FEATURE_COUNT; i++){
@@ -362,11 +348,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		//	ofstream output_feature_file(feature_filename);
 			vector<float> feature = dynamic_features[i];
 			for (auto itr = feature.begin(); itr != feature.end(); ++itr){
-				float p = *itr;
-				float angle = p - averages[i];
-			//	float angle = p;
+				float angle = *itr;
 				output_dynamic_file << angle << " ";
-			 //   output_feature_file << angle << " " << endl;
 			}
 			output_dynamic_file << endl;
 		//	output_feature_file.close();
